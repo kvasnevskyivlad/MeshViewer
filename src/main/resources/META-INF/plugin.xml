@@ -15,4 +15,10 @@
     <applicationListeners>
         <listener class="com.github.kvasnevskyivlad.meshviewer.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
     </applicationListeners>
+    <actions>
+        <action id="AddMeshToViewer" class="com.github.kvasnevskyivlad.meshviewer.actions.AddMeshToViewerAction"
+                text="--Add Mesh to Viewer--" description="Adds Mesh to Viewer">
+            <add-to-group group-id="XDebugger.ValueGroup" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
