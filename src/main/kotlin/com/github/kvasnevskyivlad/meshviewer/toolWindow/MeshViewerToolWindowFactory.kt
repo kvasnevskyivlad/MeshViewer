@@ -17,11 +17,7 @@ import javax.swing.DefaultListModel
 import javax.swing.JButton
 
 
-class MeshViewerToolWindowFactory : ToolWindowFactory {
-
-    init {
-        thisLogger().warn("Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.")
-    }
+class MeshViewerToolWindowFactory() : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val myToolWindow = MeshViewerToolWindow(toolWindow)
@@ -37,6 +33,13 @@ class MeshViewerToolWindowFactory : ToolWindowFactory {
         private var meshListModel = DefaultListModel<String>()
 
         init {
+
+            // init list model
+            service.meshes.forEach { mesh ->
+                meshListModel.addElement(mesh.toJson())
+            }
+
+            // add listener to react on mesh add event
             service.setMeshAddedListener { mesh: Mesh ->
                 meshListModel.addElement(mesh.toJson())
             }
