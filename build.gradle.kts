@@ -20,12 +20,20 @@ version = properties("pluginVersion").get()
 // Configure project's dependencies
 repositories {
     mavenCentral()
+    maven {
+        name = "JogAmp"
+        url = uri(path = "https://www.jogamp.org/deployment/maven/")
+    }
 }
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
 //    implementation(libs.annotations)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
+
+    implementation("org.jogamp.gluegen:gluegen-rt-main:2.5.0")
+    implementation("org.jogamp.jogl:jogl-all-main:2.5.0")
+
 }
 
 // Set the JVM language level used to build the project.
