@@ -33,7 +33,7 @@ dependencies {
 
     implementation("org.jogamp.gluegen:gluegen-rt-main:2.5.0")
     implementation("org.jogamp.jogl:jogl-all-main:2.5.0")
-
+    implementation("javax.vecmath:vecmath:1.5.2")
 }
 
 // Set the JVM language level used to build the project.

@@ -58,6 +58,7 @@ class Viewer : JBPanel<JBPanel<*>>() {
         glCanvas.addGLEventListener(renderer)
         glCanvas.addMouseListener(camera)
         glCanvas.addMouseMotionListener(camera)
+        glCanvas.addMouseWheelListener(camera)
 
         animator.start()
     }
