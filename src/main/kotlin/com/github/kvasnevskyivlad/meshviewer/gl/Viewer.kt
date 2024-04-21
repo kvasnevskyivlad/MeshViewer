@@ -1,5 +1,7 @@
 package com.github.kvasnevskyivlad.meshviewer.gl
 
+import com.github.kvasnevskyivlad.meshviewer.gl.camera.Camera
+import com.github.kvasnevskyivlad.meshviewer.gl.camera.CameraController
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.jogamp.opengl.awt.GLCanvas
@@ -12,6 +14,7 @@ class Viewer : JBPanel<JBPanel<*>>() {
     private val glCanvas = GLCanvas()
     private val animator = Animator(glCanvas)
     private val camera = Camera()
+    private val cameraController = CameraController(camera)
     private val renderer = Renderer(camera)
 
     //private var meshListModel = DefaultListModel<String>()
@@ -56,9 +59,9 @@ class Viewer : JBPanel<JBPanel<*>>() {
         //add(jbList, jbListConstraints)
 
         glCanvas.addGLEventListener(renderer)
-        glCanvas.addMouseListener(camera)
-        glCanvas.addMouseMotionListener(camera)
-        glCanvas.addMouseWheelListener(camera)
+        glCanvas.addMouseListener(cameraController)
+        glCanvas.addMouseMotionListener(cameraController)
+        glCanvas.addMouseWheelListener(cameraController)
 
         animator.start()
     }
