@@ -118,10 +118,10 @@ class Camera : MouseMotionListener, MouseListener, MouseWheelListener {
             return viewMatrix
         }
 
-    fun windowToView(windowPoint: Vector2f): Vector3f {
+    /*fun windowToView(windowPoint: Vector2f): Vector3f {
         val clipPoint = viewport.windowToNormalizedDevice(windowPoint)
         return projection.transform.applyInverse(clipPoint)
-    }
+    }*/
 
     private fun zoomIn() {
         zoom *= 1.1f
