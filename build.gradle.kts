@@ -11,7 +11,7 @@ plugins {
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.5.30"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.24"
 }
 
 group = properties("pluginGroup").get()
