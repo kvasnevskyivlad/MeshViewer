@@ -12,7 +12,7 @@ class Camera {
 
     private var aspectRatio = 0.0f
 
-    private var eye = Vector3f(0f, 0f, 5f) // Initial eye position
+    private var eye = Vector3f(0f, 0f, 10f) // Initial eye position
     private var center = Vector3f(0f, 0f, 0f) // Initial center position
     private var up = Vector3f(0f, 1f, 0f) // Initial up vector
     private var fov = 45f // Initial field of view
@@ -28,6 +28,14 @@ class Camera {
 
         aspectRatio = width.toFloat() / height.toFloat()
         rotation.resize(width, height)
+    }
+
+    fun zoom(factor: Float) {
+        val direction = Vector3f(center)
+        direction.sub(eye)
+        direction.scale(factor)
+        eye.add(direction)
+        center.add(direction)
     }
 
     fun applyTransform(gl: GL2) {

@@ -22,9 +22,15 @@ class CameraController(private val camera: Camera) : MouseMotionListener, MouseL
 
     override fun mouseExited(e: MouseEvent) {
         TODO("Not yet implemented")
-    }
+    } 
 
     override fun mouseWheelMoved(e: MouseWheelEvent) {
-        TODO("Not yet implemented")
+
+        // Determine the direction and magnitude of the mouse wheel movement
+        val wheelRotation = e.preciseWheelRotation
+        val zoomFactor = if (wheelRotation < 0) 1.0001f else 0.9999f  // Example zoom factor values
+
+        // Update the zoom level of the camera
+        //camera.zoom(1.01f)
     }
 }

@@ -21,8 +21,11 @@ class Renderer(private val camera: Camera) : GLEventListener {
 
         camera.applyTransform(gl)
 
+        // Draw axes
+        drawAxes(gl)
+
         // Render your OpenGL content here
-        render(gl, MeshExamples.cube)
+        render(gl, MeshExamples.triangle)
     }
 
     private fun render(gl: GL2, mesh: Mesh) {
@@ -53,5 +56,28 @@ class Renderer(private val camera: Camera) : GLEventListener {
     }
 
     override fun dispose(drawable: GLAutoDrawable) {}
+
+    private fun drawAxes(gl: GL2) {
+        // X axis (red)
+        gl.glColor3f(1.0f, 0.0f, 0.0f) // Red
+        gl.glBegin(GL.GL_LINES)
+        gl.glVertex3f(0.0f, 0.0f, 0.0f)
+        gl.glVertex3f(1.0f, 0.0f, 0.0f)
+        gl.glEnd()
+
+        // Y axis (green)
+        gl.glColor3f(0.0f, 1.0f, 0.0f) // Green
+        gl.glBegin(GL.GL_LINES)
+        gl.glVertex3f(0.0f, 0.0f, 0.0f)
+        gl.glVertex3f(0.0f, 1.0f, 0.0f)
+        gl.glEnd()
+
+        // Z axis (blue)
+        gl.glColor3f(0.0f, 0.0f, 1.0f) // Blue
+        gl.glBegin(GL.GL_LINES)
+        gl.glVertex3f(0.0f, 0.0f, 0.0f)
+        gl.glVertex3f(0.0f, 0.0f, 1.0f)
+        gl.glEnd()
+    }
 }
 
