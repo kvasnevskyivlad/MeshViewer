@@ -10,7 +10,6 @@ class CameraRotation {
 
     private var startVector = Vector3f()
     private var endVector = Vector3f()
-    private var isDragging = false
 
     private var _rotation = Matrix4f()
     private var startRotation = Matrix4f()
@@ -27,13 +26,12 @@ class CameraRotation {
         this.height = height
     }
 
-    fun startDrag(x: Int, y: Int) {
-        isDragging = true
+    fun startRotate(x: Int, y: Int) {
         startVector = getArcballVector(x, y)
         startRotation = _rotation
     }
 
-    fun drag(x: Int, y: Int) {
+    fun rotate(x: Int, y: Int) {
         endVector = getArcballVector(x, y)
 
         val rotationAxis = Vector3f()
@@ -52,10 +50,6 @@ class CameraRotation {
         // Apply new rotation to start rotation and then assign it to current rotation
         newRotation.mul(startRotation)
         _rotation = newRotation
-    }
-
-    fun endDrag() {
-        isDragging = false
     }
 
     private fun getArcballVector(x: Int, y: Int): Vector3f {

@@ -5,7 +5,6 @@ import com.jogamp.opengl.glu.GLU
 import javax.vecmath.Matrix4f
 import javax.vecmath.Vector3f
 
-
 class Camera {
 
     private val glu = GLU()
@@ -18,10 +17,39 @@ class Camera {
     private var fov = 45f // Initial field of view
 
     private var rotation = CameraRotation()
+    private var panning = CameraPanning()
 
-    fun startDrag(x: Int, y: Int) = rotation.startDrag(x, y)
-    fun drag(x: Int, y: Int) = rotation.drag(x, y)
-    fun endDrag() = rotation.endDrag()
+    private var dragMode: CameraDragMode = CameraDragMode.NONE
+
+    fun startDrag(x: Int, y: Int, mode: CameraDragMode) {
+        dragMode = mode
+
+        when (mode) {
+            CameraDragMode.PAN -> {
+                panning.startPan(x, y, eye, center)
+            }
+            CameraDragMode.ROTATE -> {
+                rotation.startRotate(x, y)
+            }
+            else -> {}
+        }
+    }
+    fun drag(x: Int, y: Int) {
+        when (dragMode) {
+            CameraDragMode.PAN -> {
+                val (newEye, newCenter) = panning.pan(x, y, eye, center, 0.1f)
+                eye = newEye
+                center = newCenter
+            }
+            CameraDragMode.ROTATE -> {
+                rotation.rotate(x, y)
+            }
+            else -> {}
+        }
+    }
+    fun endDrag() {
+        dragMode = CameraDragMode.NONE
+    }
 
     fun resize(gl: GL2, width: Int, height: Int) {
         gl.glViewport(0, 0, width, height)
@@ -30,12 +58,55 @@ class Camera {
         rotation.resize(width, height)
     }
 
+    /**
+     * Adjusts the camera's distance from the center point for zooming.
+     * @param factor The zoom factor. Values > 1.0 zoom in, and values < 1.0 zoom out.
+     */
     fun zoom(factor: Float) {
+        // Calculate the direction from eye to center
         val direction = Vector3f(center)
         direction.sub(eye)
-        direction.scale(factor)
+
+        // Get the current distance between eye and center
+        val currentDistance = direction.length()
+
+        // Normalize the direction vector
+        direction.normalize()
+
+        // Calculate the zoom increment and scale the direction
+        direction.scale(currentDistance * (factor - 1.0f))
+
+        // Adjust the eye position by the zoom increment
         eye.add(direction)
-        center.add(direction)
+    }
+
+    /**
+     * Moves the camera position horizontally and vertically based on mouse drag.
+     * @param deltaX The horizontal movement.
+     * @param deltaY The vertical movement.
+     */
+    fun pan(deltaX: Float, deltaY: Float) {
+        // Calculate the direction vector from eye to center
+        val direction = Vector3f(center)
+        direction.sub(eye)
+
+        // Calculate the right vector (perpendicular to the up vector and the direction vector)
+        val right = Vector3f()
+        right.cross(up, direction)
+        right.normalize()
+
+        // Scale the right vector by the horizontal movement amount
+        right.scale(deltaX * 0.01f) // Adjust the sensitivity if needed
+
+        // Scale the up vector by the vertical movement amount
+        val upMove = Vector3f(up)
+        upMove.scale(deltaY * 0.01f) // Adjust the sensitivity if needed
+
+        // Adjust the eye and center positions by adding the scaled right and up vectors
+        eye.add(right)
+        eye.add(upMove)
+        center.add(right)
+        center.add(upMove)
     }
 
     fun applyTransform(gl: GL2) {
@@ -62,4 +133,10 @@ class Camera {
             m03, m13, m23, m33
         )
     }
+}
+
+enum class CameraDragMode {
+    NONE,
+    ROTATE,
+    PAN
 }
