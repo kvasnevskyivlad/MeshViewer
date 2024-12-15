@@ -1,6 +1,5 @@
 package com.github.kvasnevskyivlad.meshviewer.gl.camera
 
-import javax.vecmath.Vector2f
 import javax.vecmath.Vector3f
 
 class CameraPanning {
@@ -22,22 +21,31 @@ class CameraPanning {
         val deltaX = x - startX
         val deltaY = y - startY
 
-        val right = Vector3f()
-        val up = Vector3f(0f, 1f, 0f) // Assuming Y-axis is up
+        // Calculate the camera's direction vector
+        val direction = Vector3f()
+        direction.sub(center, eye) // Direction from eye to center
+        direction.normalize()
 
-        // Calculate the right vector based on the eye and center positions
-        right.sub(center, eye)
-        right.cross(right, up)
+        // Calculate the right vector (perpendicular to up and direction)
+        val right = Vector3f()
+        val up = Vector3f(0f, 1f, 0f) // Assuming Y-axis as up
+        right.cross(up, direction)
         right.normalize()
 
-        // Scale the right and up vectors by the pan amount
+        // Dynamically adjust up vector if needed
+        up.cross(direction, right)
+        up.normalize()
+
+        // Scale by mouse movement and sensitivity
         right.scale(deltaX * sensitivity)
         up.scale(deltaY * sensitivity)
 
-        // Move the eye and center positions accordingly
-        val eyeOffset = Vector3f(right)
-        val centerOffset = Vector3f(right)
+        // Apply offsets to eye and center positions
+        val eyeOffset = Vector3f()
+        val centerOffset = Vector3f()
+        eyeOffset.add(right)
         eyeOffset.add(up)
+        centerOffset.add(right)
         centerOffset.add(up)
 
         val newEye = Vector3f(startEye)

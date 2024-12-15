@@ -37,7 +37,7 @@ class Camera {
     fun drag(x: Int, y: Int) {
         when (dragMode) {
             CameraDragMode.PAN -> {
-                val (newEye, newCenter) = panning.pan(x, y, eye, center, 0.1f)
+                val (newEye, newCenter) = panning.pan(x, y, eye, center, 0.01f)
                 eye = newEye
                 center = newCenter
             }
