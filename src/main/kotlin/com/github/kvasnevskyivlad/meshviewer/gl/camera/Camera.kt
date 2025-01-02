@@ -1,61 +1,69 @@
 package com.github.kvasnevskyivlad.meshviewer.gl.camera
 
+import com.github.kvasnevskyivlad.meshviewer.geometry.toColumnMajor
 import com.jogamp.opengl.GL2
-import com.jogamp.opengl.glu.GLU
+import com.jogamp.opengl.math.FloatUtil
 import javax.vecmath.Matrix4f
 import javax.vecmath.Vector3f
 
 class Camera {
 
-    private val glu = GLU()
+    private var _aspectRatio = 0.0f
 
-    private var aspectRatio = 0.0f
+    private var _eye = Vector3f(0f, 0f, 10f) // Initial eye position
+    private var _center = Vector3f(0f, 0f, 0f) // Initial center position
+    private var _up = Vector3f(0f, 1f, 0f) // Initial up vector
+    private var _fov = 45f // Initial field of view
 
-    private var eye = Vector3f(0f, 0f, 10f) // Initial eye position
-    private var center = Vector3f(0f, 0f, 0f) // Initial center position
-    private var up = Vector3f(0f, 1f, 0f) // Initial up vector
-    private var fov = 45f // Initial field of view
+    private var _rotation = CameraRotation()
+    private var _panning = CameraPanning()
 
-    private var rotation = CameraRotation()
-    private var panning = CameraPanning()
+    private var _dragMode: CameraDragMode = CameraDragMode.NONE
 
-    private var dragMode: CameraDragMode = CameraDragMode.NONE
+    val rotation: Matrix4f
+        get() = _rotation.rotation.toColumnMajor()
+
+    val projection: Matrix4f
+        get() = createProjectionColumnMajorMatrix()
+
+    val view: Matrix4f
+        get() = createViewColumnMajorMatrix()
 
     fun startDrag(x: Int, y: Int, mode: CameraDragMode) {
-        dragMode = mode
+        _dragMode = mode
 
         when (mode) {
             CameraDragMode.PAN -> {
-                panning.startPan(x, y, eye, center)
+                _panning.startPan(x, y, _eye, _center)
             }
             CameraDragMode.ROTATE -> {
-                rotation.startRotate(x, y)
+                _rotation.startRotate(x, y)
             }
             else -> {}
         }
     }
     fun drag(x: Int, y: Int) {
-        when (dragMode) {
+        when (_dragMode) {
             CameraDragMode.PAN -> {
-                val (newEye, newCenter) = panning.pan(x, y, eye, center, 0.01f)
-                eye = newEye
-                center = newCenter
+                val (newEye, newCenter) = _panning.pan(x, y, _eye, _center, 0.01f)
+                _eye = newEye
+                _center = newCenter
             }
             CameraDragMode.ROTATE -> {
-                rotation.rotate(x, y)
+                _rotation.rotate(x, y)
             }
             else -> {}
         }
     }
     fun endDrag() {
-        dragMode = CameraDragMode.NONE
+        _dragMode = CameraDragMode.NONE
     }
 
     fun resize(gl: GL2, width: Int, height: Int) {
         gl.glViewport(0, 0, width, height)
 
-        aspectRatio = width.toFloat() / height.toFloat()
-        rotation.resize(width, height)
+        _aspectRatio = width.toFloat() / height.toFloat()
+        _rotation.resize(width, height)
     }
 
     /**
@@ -64,8 +72,8 @@ class Camera {
      */
     fun zoom(factor: Float) {
         // Calculate the direction from eye to center
-        val direction = Vector3f(center)
-        direction.sub(eye)
+        val direction = Vector3f(_center)
+        direction.sub(_eye)
 
         // Get the current distance between eye and center
         val currentDistance = direction.length()
@@ -77,61 +85,32 @@ class Camera {
         direction.scale(currentDistance * (factor - 1.0f))
 
         // Adjust the eye position by the zoom increment
-        eye.add(direction)
+        _eye.add(direction)
     }
 
-    /**
-     * Moves the camera position horizontally and vertically based on mouse drag.
-     * @param deltaX The horizontal movement.
-     * @param deltaY The vertical movement.
-     */
-    fun pan(deltaX: Float, deltaY: Float) {
-        // Calculate the direction vector from eye to center
-        val direction = Vector3f(center)
-        direction.sub(eye)
-
-        // Calculate the right vector (perpendicular to the up vector and the direction vector)
-        val right = Vector3f()
-        right.cross(up, direction)
-        right.normalize()
-
-        // Scale the right vector by the horizontal movement amount
-        right.scale(deltaX * 0.01f) // Adjust the sensitivity if needed
-
-        // Scale the up vector by the vertical movement amount
-        val upMove = Vector3f(up)
-        upMove.scale(deltaY * 0.01f) // Adjust the sensitivity if needed
-
-        // Adjust the eye and center positions by adding the scaled right and up vectors
-        eye.add(right)
-        eye.add(upMove)
-        center.add(right)
-        center.add(upMove)
+    private fun createProjectionColumnMajorMatrix(): Matrix4f {
+        val result = FloatArray(16)
+        FloatUtil.makePerspective(result, 0, true, _fov * FloatUtil.PI / 180.0f, _aspectRatio, 0.1f, 1000.0f)
+        return Matrix4f(result)
     }
 
-    fun applyTransform(gl: GL2) {
-        gl.glMatrixMode(GL2.GL_PROJECTION)
-        gl.glLoadIdentity()
-        glu.gluPerspective(fov.toDouble(), aspectRatio.toDouble(), 0.1, 1000.0)
+    private fun createViewColumnMajorMatrix() : Matrix4f {
+        val result = FloatArray(16)
+        val input = FloatArray(16)
+        val temp = FloatArray(16)
 
-        gl.glMatrixMode(GL2.GL_MODELVIEW)
-        gl.glLoadIdentity()
-        glu.gluLookAt(
-            eye.x.toDouble(), eye.y.toDouble(), eye.z.toDouble(),
-            center.x.toDouble(), center.y.toDouble(), center.z.toDouble(),
-            up.x.toDouble(), up.y.toDouble(), up.z.toDouble()
-        )
+        input[0 + 0] = _eye.x
+        input[1 + 0] = _eye.y
+        input[2 + 0] = _eye.z
+        input[0 + 4] = _center.x
+        input[1 + 4] = _center.y
+        input[2 + 4] = _center.z
+        input[0 + 8] = _up.x
+        input[1 + 8] = _up.y
+        input[2 + 8] = _up.z
 
-        gl.glMultMatrixf(rotation.rotation.toFloatArray(), 0)
-    }
-
-    companion object {
-        fun Matrix4f.toFloatArray(): FloatArray = floatArrayOf(
-            m00, m10, m20, m30,
-            m01, m11, m21, m31,
-            m02, m12, m22, m32,
-            m03, m13, m23, m33
-        )
+        FloatUtil.makeLookAt(result, 0, input, 0, input, 4, input, 8, temp)
+        return Matrix4f(result)
     }
 }
 

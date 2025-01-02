@@ -2,6 +2,7 @@ package com.github.kvasnevskyivlad.meshviewer.gl
 
 import com.github.kvasnevskyivlad.meshviewer.geometry.Mesh
 import com.github.kvasnevskyivlad.meshviewer.geometry.MeshExamples
+import com.github.kvasnevskyivlad.meshviewer.geometry.toFloatArray
 import com.github.kvasnevskyivlad.meshviewer.gl.camera.Camera
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2
@@ -19,7 +20,8 @@ class Renderer(private val camera: Camera) : GLEventListener {
         val gl = drawable.gl.gL2
         gl.glClear(GL.GL_COLOR_BUFFER_BIT or GL.GL_DEPTH_BUFFER_BIT)
 
-        camera.applyTransform(gl)
+        // Apply transform
+        transform(gl)
 
         // Draw axes
         drawAxes(gl)
@@ -28,7 +30,24 @@ class Renderer(private val camera: Camera) : GLEventListener {
         render(gl, MeshExamples.triangle)
     }
 
+    private fun transform(gl: GL2) {
+
+        // Set Projection matrix
+        gl.glMatrixMode(GL2.GL_PROJECTION)
+        gl.glLoadIdentity()
+        gl.glMultMatrixf(camera.projection.toFloatArray(), 0)
+
+        // Set Modelview matrix
+        gl.glMatrixMode(GL2.GL_MODELVIEW)
+        gl.glLoadIdentity()
+        gl.glMultMatrixf(camera.view.toFloatArray(), 0)
+
+        // Set Rotation matrix
+        gl.glMultMatrixf(camera.rotation.toFloatArray(), 0)
+    }
+
     private fun render(gl: GL2, mesh: Mesh) {
+
         mesh.triangles.forEach { triangle ->
             val vertexA = mesh.vertices[triangle.a]
             val vertexB = mesh.vertices[triangle.b]
@@ -53,6 +72,7 @@ class Renderer(private val camera: Camera) : GLEventListener {
     override fun reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int) {
         val gl = drawable.gl.gL2
         camera.resize(gl, width, height)
+        transform(gl)
     }
 
     override fun dispose(drawable: GLAutoDrawable) {}

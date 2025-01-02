@@ -5,14 +5,14 @@ import kotlin.math.sqrt
 
 class CameraRotation {
 
-    private var width = 0
-    private var height = 0
+    private var _width = 0
+    private var _height = 0
 
-    private var startVector = Vector3f()
-    private var endVector = Vector3f()
+    private var _startVector = Vector3f()
+    private var _endVector = Vector3f()
 
     private var _rotation = Matrix4f()
-    private var startRotation = Matrix4f()
+    private var _startRotation = Matrix4f()
 
     init {
         _rotation.setIdentity()
@@ -22,21 +22,21 @@ class CameraRotation {
         get() = _rotation
 
     fun resize(width: Int, height: Int) {
-        this.width = width
-        this.height = height
+        this._width = width
+        this._height = height
     }
 
     fun startRotate(x: Int, y: Int) {
-        startVector = getArcballVector(x, y)
-        startRotation = _rotation
+        _startVector = getArcballVector(x, y)
+        _startRotation = _rotation
     }
 
     fun rotate(x: Int, y: Int) {
-        endVector = getArcballVector(x, y)
+        _endVector = getArcballVector(x, y)
 
         val rotationAxis = Vector3f()
-        rotationAxis.cross(startVector, endVector)
-        val angle = startVector.angle(endVector)
+        rotationAxis.cross(_startVector, _endVector)
+        val angle = _startVector.angle(_endVector)
 
         // Create a quaternion representing the rotation
         val axisAngle = AxisAngle4f(rotationAxis, angle)
@@ -48,14 +48,14 @@ class CameraRotation {
         newRotation.set(quaternion)
 
         // Apply new rotation to start rotation and then assign it to current rotation
-        newRotation.mul(startRotation)
+        newRotation.mul(_startRotation)
         _rotation = newRotation
     }
 
     private fun getArcballVector(x: Int, y: Int): Vector3f {
         val v = Vector3f()
-        v.x = (2.0f * x - width) / width
-        v.y = (height - 2.0f * y) / height
+        v.x = (2.0f * x - _width) / _width
+        v.y = (_height - 2.0f * y) / _height
         val d = v.lengthSquared()
         if (d <= 1) {
             v.z = sqrt(1.0 - d).toFloat()

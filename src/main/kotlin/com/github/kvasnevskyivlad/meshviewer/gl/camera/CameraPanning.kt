@@ -4,22 +4,22 @@ import javax.vecmath.Vector3f
 
 class CameraPanning {
 
-    private var startEye = Vector3f()
-    private var startCenter = Vector3f()
+    private var _startEye = Vector3f()
+    private var _startCenter = Vector3f()
 
-    private var startX = 0
-    private var startY = 0
+    private var _startX = 0
+    private var _startY = 0
 
     fun startPan(x: Int, y: Int, eye: Vector3f, center: Vector3f) {
-        startEye.set(eye)
-        startCenter.set(center)
-        startX = x
-        startY = y
+        _startEye.set(eye)
+        _startCenter.set(center)
+        _startX = x
+        _startY = y
     }
 
     fun pan(x: Int, y: Int, eye: Vector3f, center: Vector3f, sensitivity: Float): Pair<Vector3f, Vector3f> {
-        val deltaX = x - startX
-        val deltaY = y - startY
+        val deltaX = x - _startX
+        val deltaY = y - _startY
 
         // Calculate the camera's direction vector
         val direction = Vector3f()
@@ -48,8 +48,8 @@ class CameraPanning {
         centerOffset.add(right)
         centerOffset.add(up)
 
-        val newEye = Vector3f(startEye)
-        val newCenter = Vector3f(startCenter)
+        val newEye = Vector3f(_startEye)
+        val newCenter = Vector3f(_startCenter)
         newEye.add(eyeOffset)
         newCenter.add(centerOffset)
 
