@@ -1,7 +1,11 @@
 package com.github.kvasnevskyivlad.meshviewer.gl.camera
 
-import javax.vecmath.*
+import org.joml.AxisAngle4f
+import org.joml.Vector3f
+import org.joml.Matrix4f
+import org.joml.Quaternionf
 import kotlin.math.sqrt
+
 
 class CameraRotation {
 
@@ -14,9 +18,7 @@ class CameraRotation {
     private var _rotation = Matrix4f()
     private var _startRotation = Matrix4f()
 
-    init {
-        _rotation.setIdentity()
-    }
+    private var sensitivity: Float = 1.0f
 
     val rotation: Matrix4f
         get() = _rotation
@@ -34,14 +36,14 @@ class CameraRotation {
     fun rotate(x: Int, y: Int) {
         _endVector = getArcballVector(x, y)
 
-        val rotationAxis = Vector3f()
-        rotationAxis.cross(_startVector, _endVector)
-        val angle = _startVector.angle(_endVector)
+        val rotationAxis = Vector3f(_startVector)
+        rotationAxis.cross(_endVector)
+        rotationAxis.normalize()
+        val angle = _startVector.angle(_endVector) * sensitivity
 
         // Create a quaternion representing the rotation
-        val axisAngle = AxisAngle4f(rotationAxis, angle)
-        val quaternion = Quat4f()
-        quaternion.set(axisAngle)
+        val axisAngle = AxisAngle4f(angle, rotationAxis)
+        val quaternion = Quaternionf(axisAngle)
 
         // Convert the quaternion to a rotation matrix
         val newRotation = Matrix4f()
