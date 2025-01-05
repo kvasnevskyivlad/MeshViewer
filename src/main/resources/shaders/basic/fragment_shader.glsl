@@ -1,5 +1,8 @@
 #version 330
 
+in vec3 vertexColor;                // Interpolated color from vertex shader
+out vec4 fragColor;                 // Final fragment color
+
 void main() {
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);  // red color
+    fragColor = vec4(vertexColor, 1.0); // Use the vertex color with full opacity
 }
