@@ -2,6 +2,7 @@ package com.github.kvasnevskyivlad.meshviewer.gl
 
 import com.github.kvasnevskyivlad.meshviewer.gl.camera.Camera
 import com.github.kvasnevskyivlad.meshviewer.gl.camera.CameraController
+import com.github.kvasnevskyivlad.meshviewer.gl.render.Renderer
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.jogamp.opengl.awt.GLCanvas

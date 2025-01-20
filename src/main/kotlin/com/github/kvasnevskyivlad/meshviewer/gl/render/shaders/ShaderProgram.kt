@@ -1,18 +1,21 @@
-package com.github.kvasnevskyivlad.meshviewer.gl
+package com.github.kvasnevskyivlad.meshviewer.gl.render.shaders
 
+import com.github.kvasnevskyivlad.meshviewer.gl.render.scene.SceneContext
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2
+import org.joml.Matrix4f
+import org.joml.Vector3f
 import java.nio.ByteBuffer
 import java.nio.IntBuffer
-import org.joml.Matrix4f
 
-class ShaderProgram(private val gl: GL2, vertexShaderSource: String, fragmentShaderSource: String) {
-    private var id: Int = 0
-    private var transformLocation: Int = 0
+abstract class ShaderProgram(protected val gl: GL2, vertexShaderSource: String, fragmentShaderSource: String) : IShaderProgram{
+    protected var id: Int = 0
 
     init {
         load(vertexShaderSource, fragmentShaderSource)
     }
+
+    abstract fun registerLocations()
 
     private fun load(vertexShaderSource: String, fragmentShaderSource: String) {
         val vertexShader = compileShader(GL2.GL_VERTEX_SHADER, vertexShaderSource)
@@ -38,7 +41,8 @@ class ShaderProgram(private val gl: GL2, vertexShaderSource: String, fragmentSha
             println("Shader linking failed: ${String(log.array())}")
         }
 
-        transformLocation = gl.glGetUniformLocation(id, "transform")
+        // Register locations
+        registerLocations()
 
         // Clean up
         gl.glDeleteShader(vertexShader)
@@ -64,17 +68,33 @@ class ShaderProgram(private val gl: GL2, vertexShaderSource: String, fragmentSha
         return shader
     }
 
-    fun use() {
+    override fun execute(context: SceneContext, action: () -> Unit) {
+        activate()
+        try {
+            setLocations(context)
+            action()
+        } finally {
+            deactivate()
+        }
+    }
+
+    abstract fun setLocations(context: SceneContext)
+
+    private fun activate() {
         gl.glUseProgram(id)
     }
 
-    fun setTransform(matrix: Matrix4f) {
-        // Create a float array to hold the matrix values
+    private fun deactivate() {
+        gl.glUseProgram(0)
+    }
+
+    protected fun setUniformMatrix4(location: Int, matrix: Matrix4f) {
         val array = FloatArray(16)
-
-        // Get the matrix values in column-major order
         matrix.get(array)
+        gl.glUniformMatrix4fv(location, 1, false, array, 0)
+    }
 
-        gl.glUniformMatrix4fv(transformLocation, 1, false, array, 0)
+    protected fun setUniform3(location: Int, value: Vector3f) {
+        gl.glUniform3f(location, value.x, value.y, value.z)
     }
 }

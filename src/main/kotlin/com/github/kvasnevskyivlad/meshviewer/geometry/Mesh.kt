@@ -6,7 +6,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Serializable
-data class Point(val x: Double, val y: Double, val z: Double)
+data class Point(val x: Float, val y: Float, val z: Float)
 
 @Serializable
 data class Triangle(val a: Int, val b: Int, val c: Int)

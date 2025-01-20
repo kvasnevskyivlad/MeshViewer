@@ -18,22 +18,27 @@ class Camera {
 
     private var _dragMode: CameraDragMode = CameraDragMode.NONE
 
-    private val rotation: Matrix4f
+    val rotation: Matrix4f
         get() = _rotation.rotation
 
-    private val projection: Matrix4f
+    val projection: Matrix4f
         get() = Matrix4f().perspective(Math.toRadians(_fov.toDouble()).toFloat(), _aspectRatio, 0.1f, 1000f)
 
-    private val view: Matrix4f
+    val view: Matrix4f
         get() = Matrix4f().lookAt(_eye, _center, _up)
+            // apply rotation
+            .mul(rotation)
 
-    val transform: Matrix4f
-        get() {
-            val result = projection
-            result.mul(view)
-            result.mul(rotation)
-            return result
-        }
+//    val transform: Matrix4f
+//        get() {
+//            val result = projection
+//            result.mul(view)
+//            result.mul(rotation)
+//            return result
+//        }
+
+    val eyePosition: Vector3f
+        get() = _eye
 
     fun startDrag(x: Int, y: Int, mode: CameraDragMode) {
         _dragMode = mode
