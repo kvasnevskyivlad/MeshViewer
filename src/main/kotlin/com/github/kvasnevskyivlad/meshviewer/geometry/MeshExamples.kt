@@ -1,5 +1,8 @@
 package com.github.kvasnevskyivlad.meshviewer.geometry
 
+import kotlin.math.cos
+import kotlin.math.sin
+
 class MeshExamples {
 
     companion object {
@@ -13,40 +16,78 @@ class MeshExamples {
             Mesh(vertices, triangles)
         }
 
-        val cube: Mesh by lazy {
-            val vertices = listOf(
-                Point(-1.0f, -1.0f, -1.0f), // 0
-                Point(1.0f, -1.0f, -1.0f),  // 1
-                Point(1.0f, 1.0f, -1.0f),   // 2
-                Point(-1.0f, 1.0f, -1.0f),  // 3
-                Point(-1.0f, -1.0f, 1.0f),  // 4
-                Point(1.0f, -1.0f, 1.0f),   // 5
-                Point(1.0f, 1.0f, 1.0f),    // 6
-                Point(-1.0f, 1.0f, 1.0f)    // 7
-            )
-            val triangles = listOf(
-                Triangle(0, 1, 2), Triangle(2, 3, 0), // Front face
-                Triangle(4, 5, 6), Triangle(6, 7, 4), // Back face
-                Triangle(3, 2, 6), Triangle(6, 7, 3), // Top face
-                Triangle(0, 1, 5), Triangle(5, 4, 0), // Bottom face
-                Triangle(0, 3, 7), Triangle(7, 4, 0), // Left face
-                Triangle(1, 2, 6), Triangle(6, 5, 1)  // Right face
-            )
+
+        val sphere: Mesh by lazy {
+            val radius = 1.0f
+            val sectorCount = 36  // Longitudinal slices
+            val stackCount = 18   // Latitudinal slices
+
+            val vertices = mutableListOf<Point>()
+            val triangles = mutableListOf<Triangle>()
+
+            // Generate vertices
+            for (stack in 0..stackCount) {
+                val phi = Math.PI * stack / stackCount  // Elevation angle (0 to PI)
+                for (sector in 0..sectorCount) {
+                    val theta = 2.0 * Math.PI * sector / sectorCount  // Azimuth angle (0 to 2PI)
+                    val x = (radius * sin(phi) * cos(theta)).toFloat()
+                    val y = (radius * cos(phi)).toFloat()
+                    val z = (radius * sin(phi) * sin(theta)).toFloat()
+                    vertices.add(Point(x, y, z))
+                }
+            }
+
+            // Generate triangles with CCW order
+            for (stack in 0 until stackCount) {
+                for (sector in 0 until sectorCount) {
+                    val first = (stack * (sectorCount + 1)) + sector
+                    val second = first + sectorCount + 1
+
+                    // First triangle (CCW)
+                    triangles.add(Triangle(first, second, first + 1))
+                    // Second triangle (CCW)
+                    triangles.add(Triangle(second, second + 1, first + 1))
+                }
+            }
+
             Mesh(vertices, triangles)
         }
 
-        // Added two triangles representing an edge of a cube
-        val edge: Mesh by lazy {
+        val cube: Mesh by lazy {
             val vertices = listOf(
-                Point(0.0f, 0.0f, 0.0f), // Vertex 0
-                Point(1.0f, 0.0f, 0.0f), // Vertex 1
-                Point(0.0f, 1.0f, 0.0f), // Vertex 2
-                Point(1.0f, 1.0f, 0.0f)  // Vertex 3
+                // Front face
+                Point(-1.0f, -1.0f, 1.0f), // 0
+                Point( 1.0f, -1.0f, 1.0f), // 1
+                Point( 1.0f,  1.0f, 1.0f), // 2
+                Point(-1.0f,  1.0f, 1.0f), // 3
+                // Back face
+                Point(-1.0f, -1.0f, -1.0f), // 4
+                Point( 1.0f, -1.0f, -1.0f), // 5
+                Point( 1.0f,  1.0f, -1.0f), // 6
+                Point(-1.0f,  1.0f, -1.0f), // 7
             )
+
             val triangles = listOf(
-                Triangle(0, 1, 2), // First triangle (edge of the cube)
-                Triangle(1, 2, 3)  // Second triangle (edge of the cube)
+                // Front face
+                Triangle(0, 1, 2),
+                Triangle(0, 2, 3),
+                // Right face
+                Triangle(1, 5, 6),
+                Triangle(1, 6, 2),
+                // Back face
+                Triangle(5, 4, 7),
+                Triangle(5, 7, 6),
+                // Left face
+                Triangle(4, 0, 3),
+                Triangle(4, 3, 7),
+                // Bottom face
+                Triangle(4, 5, 1),
+                Triangle(4, 1, 0),
+                // Top face
+                Triangle(3, 2, 6),
+                Triangle(3, 6, 7)
             )
+
             Mesh(vertices, triangles)
         }
 
@@ -65,30 +106,6 @@ class MeshExamples {
                 Triangle(3, 0, 1)
             )
 
-            Mesh(vertices, triangles)
-        }
-
-        val pyramid: Mesh by lazy {
-            // Define the vertices of the pyramid
-            val vertices = listOf(
-                Point(0.0f, 0.0f, 0.0f),  // Vertex 0: base left front
-                Point(1.0f, 0.0f, 0.0f),  // Vertex 1: base right front
-                Point(1.0f, 1.0f, 0.0f),  // Vertex 2: base right back
-                Point(0.0f, 1.0f, 0.0f),  // Vertex 3: base left back
-                Point(0.5f, 0.5f, 1.0f)   // Vertex 4: apex (top)
-            )
-
-            // Define the triangles of the pyramid
-            val triangles = listOf(
-                Triangle(0, 1, 4),  // Triangle 1: front face
-                Triangle(1, 2, 4),  // Triangle 2: right face
-                Triangle(2, 3, 4),  // Triangle 3: back face
-                Triangle(3, 0, 4),  // Triangle 4: left face
-                Triangle(0, 1, 2),  // Triangle 5: base (bottom)
-                Triangle(0, 2, 3)   // Triangle 6: base (bottom)
-            )
-
-            // Create the mesh with the defined vertices and triangles
             Mesh(vertices, triangles)
         }
     }

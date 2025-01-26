@@ -1,5 +1,6 @@
 package com.github.kvasnevskyivlad.meshviewer.gl
 
+import com.github.kvasnevskyivlad.meshviewer.geometry.Mesh
 import com.github.kvasnevskyivlad.meshviewer.gl.camera.Camera
 import com.github.kvasnevskyivlad.meshviewer.gl.camera.CameraController
 import com.github.kvasnevskyivlad.meshviewer.gl.render.Renderer
@@ -65,5 +66,9 @@ class Viewer : JBPanel<JBPanel<*>>() {
         glCanvas.addMouseWheelListener(cameraController)
 
         animator.start()
+    }
+
+    fun setSingle(mesh: Mesh) {
+        renderer.scene.setSingle(mesh)
     }
 }

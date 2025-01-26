@@ -8,16 +8,16 @@ import org.joml.Vector3f
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class MeshSceneItem(gl: GL2, private val mesh: Mesh, private val shaders: ShadersProvider) : ISceneItem{
+class MeshSceneItem(private val mesh: Mesh, private val shaders: ShadersProvider) : ISceneItem{
     private var vboBuffer: IntBuffer? = null
     private var vaoBuffer: IntBuffer? = null
+    private var context: MeshSceneItemContext = MeshSceneItemContext(Vector3f(0.5f, 0.5f, 0.5f))
 
-    init {
+    private fun initBuffers(gl: GL2) {
         val vertexData = mutableListOf<Float>()
-        val colorData = mutableListOf<Float>()
         val normalData = mutableListOf<Float>()
 
-        val normals = NormalComputationAlgorithm(mesh).compute()
+        val normals = NormalComputationAlgorithm(mesh).computeSmoothShadingNormals()
 
         mesh.triangles.forEach { triangle ->
             val vertexA = mesh.vertices[triangle.a]
@@ -29,12 +29,6 @@ class MeshSceneItem(gl: GL2, private val mesh: Mesh, private val shaders: Shader
                 vertexA.x, vertexA.y, vertexA.z,
                 vertexB.x, vertexB.y, vertexB.z,
                 vertexC.x, vertexC.y, vertexC.z,
-            ))
-
-            colorData.addAll(listOf(
-                1.0f, 0.0f, 0.0f,  // red
-                0.0f, 1.0f, 0.0f,  // green
-                0.0f, 0.0f, 1.0f   // blue
             ))
 
             // Add normals (fetch the normal for each vertex from the map)
@@ -51,22 +45,17 @@ class MeshSceneItem(gl: GL2, private val mesh: Mesh, private val shaders: Shader
 
         // Create and bind VBO (Vertex Buffer Object)
         val vertexBuffer = FloatBuffer.wrap(vertexData.toFloatArray())
-        val colorBuffer = FloatBuffer.wrap(colorData.toFloatArray())
         val normalBuffer = FloatBuffer.wrap(normalData.toFloatArray()) // Buffer for normals
 
-        vboBuffer = IntBuffer.allocate(3) // Position, color, normal
-        gl.glGenBuffers(3, vboBuffer)
+        vboBuffer = IntBuffer.allocate(2) // Position, normal
+        gl.glGenBuffers(2, vboBuffer)
 
         // Position VBO
         gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, vboBuffer!![0])
         gl.glBufferData(GL2.GL_ARRAY_BUFFER, (vertexData.size * 4).toLong(), vertexBuffer, GL2.GL_STATIC_DRAW)
 
-        // Color VBO
-        gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, vboBuffer!![1])
-        gl.glBufferData(GL2.GL_ARRAY_BUFFER, (colorData.size * 4).toLong(), colorBuffer, GL2.GL_STATIC_DRAW)
-
         // Normal VBO
-        gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, vboBuffer!![2])
+        gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, vboBuffer!![1])
         gl.glBufferData(GL2.GL_ARRAY_BUFFER, (normalData.size * 4).toLong(), normalBuffer, GL2.GL_STATIC_DRAW)
 
         // Create and bind VAO (Vertex Array Object)
@@ -80,23 +69,23 @@ class MeshSceneItem(gl: GL2, private val mesh: Mesh, private val shaders: Shader
         gl.glVertexAttribPointer(0, 3, GL2.GL_FLOAT, false, 0, 0)
         gl.glEnableVertexAttribArray(0)
 
-        // Color Attribute (location = 1)
+        // Normal Attribute (location = 1)
         gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, vboBuffer!![1])
         gl.glVertexAttribPointer(1, 3, GL2.GL_FLOAT, false, 0, 0)
         gl.glEnableVertexAttribArray(1)
-
-        // Normal Attribute (location = 2)
-        gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, vboBuffer!![2])
-        gl.glVertexAttribPointer(2, 3, GL2.GL_FLOAT, false, 0, 0)
-        gl.glEnableVertexAttribArray(2)
 
         // Unbind the VAO and VBO
         gl.glBindVertexArray(0)
         gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0)
     }
 
-    override fun render(gl: GL2, context: SceneContext) {
-        shaders.mesh.execute(context) {
+    override fun render(gl: GL2, sceneContext: ISceneContext) {
+        // Make sure to initialize OpenGL buffers before rendering
+        if (vaoBuffer == null || vboBuffer == null) {
+            initBuffers(gl)
+        }
+
+        shaders.mesh.execute(sceneContext, context) {
             gl.glBindVertexArray(vaoBuffer!![0])
             gl.glDrawArrays(GL2.GL_TRIANGLES, 0, mesh.triangles.size * 3)
             gl.glBindVertexArray(0)

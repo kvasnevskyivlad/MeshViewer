@@ -1,5 +1,8 @@
 package com.github.kvasnevskyivlad.meshviewer.gl.render.shaders
 
+import com.github.kvasnevskyivlad.meshviewer.gl.render.scene.DefaultSceneItemContext
+import com.github.kvasnevskyivlad.meshviewer.gl.render.scene.ISceneContext
+import com.github.kvasnevskyivlad.meshviewer.gl.render.scene.ISceneItemContext
 import com.github.kvasnevskyivlad.meshviewer.gl.render.scene.SceneContext
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2
@@ -15,7 +18,7 @@ abstract class ShaderProgram(protected val gl: GL2, vertexShaderSource: String, 
         load(vertexShaderSource, fragmentShaderSource)
     }
 
-    abstract fun registerLocations()
+    abstract fun registerUniformLocations()
 
     private fun load(vertexShaderSource: String, fragmentShaderSource: String) {
         val vertexShader = compileShader(GL2.GL_VERTEX_SHADER, vertexShaderSource)
@@ -42,7 +45,7 @@ abstract class ShaderProgram(protected val gl: GL2, vertexShaderSource: String, 
         }
 
         // Register locations
-        registerLocations()
+        registerUniformLocations()
 
         // Clean up
         gl.glDeleteShader(vertexShader)
@@ -68,17 +71,21 @@ abstract class ShaderProgram(protected val gl: GL2, vertexShaderSource: String, 
         return shader
     }
 
-    override fun execute(context: SceneContext, action: () -> Unit) {
+    override fun execute(sceneContext: ISceneContext, action: () -> Unit) {
+        execute(sceneContext, DefaultSceneItemContext(), action)
+    }
+
+    override fun execute(sceneContext: ISceneContext, itemContext: ISceneItemContext, action: () -> Unit) {
         activate()
         try {
-            setLocations(context)
+            setUniformValues(sceneContext, itemContext)
             action()
         } finally {
             deactivate()
         }
     }
 
-    abstract fun setLocations(context: SceneContext)
+    abstract fun setUniformValues(sceneContext: ISceneContext, itemContext: ISceneItemContext)
 
     private fun activate() {
         gl.glUseProgram(id)

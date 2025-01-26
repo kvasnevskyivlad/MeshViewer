@@ -36,6 +36,7 @@ class MeshViewerToolWindowFactory() : ToolWindowFactory {
 
             // add listener to react on mesh add event
             service.setMeshAddedListener { mesh: Mesh ->
+                viewer.setSingle(mesh)
                 //meshListModel.addElement(mesh.toJson())
             }
         }

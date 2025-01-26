@@ -1,44 +1,50 @@
 #version 330
 
-in vec3 vertexColor;                // Interpolated color from vertex shader
 in vec3 vertexNormal;               // Normal from vertex shader
 in vec3 fragPosition;               // Fragment position in view space
 out vec4 fragColor;                 // Final fragment color
 
-uniform vec3 eyePosition;                   // Camera position for view direction
+uniform vec3 lightColor;           // Light color
+uniform vec3 lightPosition;           // Light position
+uniform vec3 eyePosition;           // Eye position
+uniform vec3 objectColor;           // Object color
 
-const vec3 lightDirection = vec3(0, 0, 1);
-const float shininess = 32.0f;
 
 void main() {
-    // Normalize the input normal
+
+    // Check if the triangle is back-facing
+    if (!gl_FrontFacing) {
+        // Color back-facing triangles red
+        fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        return;
+    }
+
+    // Ambient
+    float ambientStrength = 0.5;
+    vec3 ambient = ambientStrength * lightColor;
+
+    // Diffuse
     vec3 normal = normalize(vertexNormal);
+    vec3 lightDirection = normalize(lightPosition - fragPosition);
+    float lambertian = max(dot(normal, lightDirection), 0.0);
+    vec3 diffuse = lambertian * lightColor;
 
-    // Calculate light direction (normalize to avoid intensity problems)
-    vec3 lightDir = normalize(lightDirection);
+    // Specular
+    float specularStrength = 0.3;
+    vec3 viewDirection = normalize(eyePosition - fragPosition);
+    vec3 reflectDirection = reflect(-lightDirection, normal);
+    float specularAngle = max(dot(reflectDirection, lightDirection), 0.0);
+    float specularFactor = pow(specularAngle, 32);
 
-    // Calculate the view direction (from fragment to camera)
-    vec3 viewDir = normalize(eyePosition - fragPosition);
+    if (lambertian <= 0)
+    {
+        specularFactor = 0.0;
+    }
 
-    // Diffuse reflection (Lambertian reflectance)
-    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 specular = specularStrength * specularFactor * lightColor;
 
-    // Specular reflection (Phong model)
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
 
-    // Ambient term
-    vec3 ambient = 0.1 * vertexColor;  // 10% ambient light
-
-    // Diffuse term
-    vec3 diffuse = diff * vertexColor;
-
-    // Specular term (added for shininess)
-    vec3 specular = spec * vec3(1.0, 1.0, 1.0);  // White specular highlight
-
-    // Combine all components
-    vec3 color = ambient + diffuse + specular;
-
-    // Final output color (with alpha = 1.0 for full opacity)
-    fragColor = vec4(color, 1.0);
+    // Result
+    vec3 result = (ambient + diffuse + specular) * objectColor;
+    fragColor = vec4(result, 1.0);
 }

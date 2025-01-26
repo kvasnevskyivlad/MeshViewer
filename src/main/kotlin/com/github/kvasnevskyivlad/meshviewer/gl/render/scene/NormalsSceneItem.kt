@@ -7,20 +7,20 @@ import com.jogamp.opengl.GL2
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class NormalsSceneItem(gl: GL2, private val mesh: Mesh, private val shaders: ShadersProvider) : ISceneItem {
+class NormalsSceneItem(private val mesh: Mesh, private val shaders: ShadersProvider) : ISceneItem {
     private var vboBuffer: IntBuffer? = null
     private var vaoBuffer: IntBuffer? = null
 
     // This value controls the length of the normal lines
     private val normalLineLength = 0.3f
 
-    init {
+    private fun initBuffers(gl: GL2) {
         val vertexData = mutableListOf<Float>()
         val colorData = mutableListOf<Float>()
         val lineData = mutableListOf<Float>()
 
         // Compute normals
-        val normals = NormalComputationAlgorithm(mesh).compute()
+        val normals = NormalComputationAlgorithm(mesh).computeSmoothShadingNormals()
 
         mesh.vertices.forEachIndexed { index, vertex ->
             // Add positions for the line (each vertex position + normal direction)
@@ -92,8 +92,13 @@ class NormalsSceneItem(gl: GL2, private val mesh: Mesh, private val shaders: Sha
         gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0)
     }
 
-    override fun render(gl: GL2, context: SceneContext) {
-        shaders.normals.execute(context) {
+    override fun render(gl: GL2, sceneContext: ISceneContext) {
+        // Make sure to initialize OpenGL buffers before rendering
+        if (vaoBuffer == null || vboBuffer == null) {
+            initBuffers(gl)
+        }
+
+        shaders.normals.execute(sceneContext) {
             gl.glBindVertexArray(vaoBuffer!![0])
             // Draw lines to visualize normals (using GL_LINES for line rendering)
             gl.glDrawArrays(GL2.GL_LINES, 0, mesh.vertices.size * 2)

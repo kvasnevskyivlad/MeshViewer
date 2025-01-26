@@ -1,9 +1,6 @@
 package com.github.kvasnevskyivlad.meshviewer.gl.render
 
-import com.github.kvasnevskyivlad.meshviewer.geometry.MeshExamples
 import com.github.kvasnevskyivlad.meshviewer.gl.camera.Camera
-import com.github.kvasnevskyivlad.meshviewer.gl.render.scene.MeshSceneItem
-import com.github.kvasnevskyivlad.meshviewer.gl.render.scene.NormalsSceneItem
 import com.github.kvasnevskyivlad.meshviewer.gl.render.shaders.ShadersProvider
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2
@@ -11,31 +8,23 @@ import com.jogamp.opengl.GLAutoDrawable
 import com.jogamp.opengl.GLEventListener
 
 class Renderer(private val camera: Camera) : GLEventListener {
-    private lateinit var scene: Scene
+    lateinit var scene: Scene
 
     override fun init(drawable: GLAutoDrawable) {
         val gl = drawable.gl.gL2
-        gl.glClearColor(1.0f, 1.0f, 1.0f, 0.0f)
+        gl.glClearColor(0.68f, 0.85f, 0.90f, 0.0f) // RGB for bluish background
 
         // Enable depth testing and backface culling
         gl.glEnable(GL2.GL_DEPTH_TEST)     // Enable depth testing
-        gl.glEnable(GL2.GL_CULL_FACE)      // Enable backface culling
-        gl.glCullFace(GL2.GL_BACK)         // Cull the back faces
+        //gl.glEnable(GL2.GL_CULL_FACE)    // Enable backface culling (To disallow backfaces to reach the shader).
+        //gl.glCullFace(GL2.GL_BACK)       // Cull the back faces
         gl.glFrontFace(GL2.GL_CCW)         // Set counter-clockwise winding as front-facing
 
         // Initialize shaders provider
         val shaders = ShadersProvider(gl)
 
         // Initialize scene
-        scene = Scene(camera)
-
-        // Add mesh item to scene
-        val mesh = MeshSceneItem(gl, MeshExamples.tetrahedron, shaders)
-        scene.add(mesh)
-
-        // Add mesh normals to scene
-        val normals = NormalsSceneItem(gl, MeshExamples.tetrahedron, shaders)
-        scene.add(normals)
+        scene = Scene(camera, shaders)
     }
 
     override fun display(drawable: GLAutoDrawable) {
@@ -46,7 +35,7 @@ class Renderer(private val camera: Camera) : GLEventListener {
         scene.render(gl)
 
         // Draw axes
-        drawAxes(gl)
+        //drawAxes(gl)
     }
 
     override fun reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int) {
