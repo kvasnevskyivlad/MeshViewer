@@ -20,7 +20,7 @@ void main() {
     }
 
     // Ambient
-    float ambientStrength = 0.5;
+    float ambientStrength = 0.7;
     vec3 ambient = ambientStrength * lightColor;
 
     // Diffuse

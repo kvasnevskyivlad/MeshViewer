@@ -11,8 +11,11 @@ out vec3 fragPosition;                 // Position of the fragment in view space
 
 void main() {
     gl_Position = projection * view * vec4(position, 1.0); // Apply View and Projection
-    vertexNormal = vec3(view * vec4(normal, 0.0));         // Pass the normal
 
-    // Pass the fragment position in world space.
-    fragPosition = position;
+    // Correctly transform the normal
+    mat3 normalMatrix = mat3(transpose(inverse(view)));    // Extract normal matrix
+    vertexNormal = normalize(normalMatrix * normal);       // Pass the transformed normal
+
+    // Pass the fragment position in view space
+    fragPosition = vec3(view * vec4(position, 1.0));
 }
