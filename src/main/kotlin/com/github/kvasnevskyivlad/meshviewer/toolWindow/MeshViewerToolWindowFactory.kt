@@ -7,7 +7,7 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
 import com.github.kvasnevskyivlad.meshviewer.geometry.Mesh
-import com.github.kvasnevskyivlad.meshviewer.gl.Viewer
+import com.github.kvasnevskyivlad.meshviewer.gui.Viewer
 import com.github.kvasnevskyivlad.meshviewer.services.MeshService
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -36,7 +36,7 @@ class MeshViewerToolWindowFactory() : ToolWindowFactory {
 
             // add listener to react on mesh add event
             service.setMeshAddedListener { mesh: Mesh ->
-                viewer.setSingle(mesh)
+                viewer.addMesh(mesh)
                 //meshListModel.addElement(mesh.toJson())
             }
         }

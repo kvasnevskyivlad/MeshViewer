@@ -7,7 +7,11 @@ import com.jogamp.opengl.GL2
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class NormalsSceneItem(private val mesh: Mesh, private val shaders: ShadersProvider) : ISceneItem {
+class NormalsSceneItem(
+    override val id: Int,
+    override var visible: Boolean = true,
+    private val mesh: Mesh,
+    private val shaders: ShadersProvider) : ISceneItem {
     private var vboBuffer: IntBuffer? = null
     private var vaoBuffer: IntBuffer? = null
 
@@ -93,6 +97,11 @@ class NormalsSceneItem(private val mesh: Mesh, private val shaders: ShadersProvi
     }
 
     override fun render(gl: GL2, sceneContext: ISceneContext) {
+
+        if (!visible) {
+            return;
+        }
+
         // Make sure to initialize OpenGL buffers before rendering
         if (vaoBuffer == null || vboBuffer == null) {
             initBuffers(gl)

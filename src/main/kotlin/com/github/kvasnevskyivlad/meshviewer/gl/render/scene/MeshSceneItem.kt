@@ -8,7 +8,12 @@ import org.joml.Vector3f
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class MeshSceneItem(private val mesh: Mesh, private val shaders: ShadersProvider) : ISceneItem{
+class MeshSceneItem(
+    override val id: Int,
+    override var visible: Boolean = true,
+    private val mesh: Mesh,
+    private val shaders: ShadersProvider
+) : ISceneItem{
     private var vboBuffer: IntBuffer? = null
     private var vaoBuffer: IntBuffer? = null
     private var context: MeshSceneItemContext = MeshSceneItemContext(Vector3f(0.5f, 0.5f, 0.5f))
@@ -80,6 +85,10 @@ class MeshSceneItem(private val mesh: Mesh, private val shaders: ShadersProvider
     }
 
     override fun render(gl: GL2, sceneContext: ISceneContext) {
+        if (!visible) {
+            return;
+        }
+
         // Make sure to initialize OpenGL buffers before rendering
         if (vaoBuffer == null || vboBuffer == null) {
             initBuffers(gl)

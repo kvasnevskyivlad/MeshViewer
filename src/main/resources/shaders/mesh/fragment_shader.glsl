@@ -12,30 +12,27 @@ uniform vec3 objectColor;           // Object color
 
 void main() {
 
-    // Check if the triangle is back-facing
-    if (!gl_FrontFacing) {
-        // Color back-facing triangles red
-        fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-        return;
-    }
-
     // Ambient
     float ambientStrength = 0.7;
     vec3 ambient = ambientStrength * lightColor;
 
     // Diffuse
-    vec3 normal = normalize(vertexNormal);
+    vec3 normal = gl_FrontFacing ? normalize(vertexNormal) : -normalize(vertexNormal);
     vec3 lightDirection = normalize(lightPosition - fragPosition);
     float lambertian = max(dot(normal, lightDirection), 0.0);
-    vec3 diffuse = lambertian * lightColor;
+    float diffuseFalloff = 0.5; // Smoothness factor for diffuse lighting
+    vec3 diffuse = pow(lambertian, 1.0 / diffuseFalloff) * lightColor;
 
     // Specular
-    float specularStrength = 0.3;
+    float specularStrength = 0.2;
+    float specularExponent = 16.0; // Adjusted for a broader highlight
     vec3 viewDirection = normalize(eyePosition - fragPosition);
     vec3 reflectDirection = reflect(-lightDirection, normal);
     float specularAngle = max(dot(reflectDirection, lightDirection), 0.0);
-    float specularFactor = pow(specularAngle, 32);
+    float specularFactor = pow(specularAngle, specularExponent);
 
+    // Ensure specular highlights only occur on lit areas of the surface.
+    // If the surface is not lit (lambertian <= 0), the specular effect is disabled.
     if (lambertian <= 0)
     {
         specularFactor = 0.0;
@@ -43,8 +40,11 @@ void main() {
 
     vec3 specular = specularStrength * specularFactor * lightColor;
 
+    // Back-facing adjustment: scale down light for back-facing triangles
+    float backFaceFactor = gl_FrontFacing ? 1.0 : 0.5; // Reduce light for back-facing triangles
+    vec3 color = gl_FrontFacing ? objectColor : vec3(1.0, 0.0, 0.0); // Color back-facing triangles red
 
-    // Result
-    vec3 result = (ambient + diffuse + specular) * objectColor;
+    // Final computation
+    vec3 result = (ambient + diffuse + specular) * color * backFaceFactor;
     fragColor = vec4(result, 1.0);
 }

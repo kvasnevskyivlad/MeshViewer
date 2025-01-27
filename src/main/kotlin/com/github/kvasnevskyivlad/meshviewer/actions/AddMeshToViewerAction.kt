@@ -4,6 +4,7 @@ import com.github.kvasnevskyivlad.meshviewer.services.MeshService
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
+import com.intellij.openapi.ui.Messages
 import com.intellij.xdebugger.impl.ui.tree.actions.XDebuggerTreeActionBase
 
 internal class AddMeshToViewerAction : AnAction() {
@@ -13,7 +14,20 @@ internal class AddMeshToViewerAction : AnAction() {
         val selectedNode =  XDebuggerTreeActionBase.getSelectedNode(e.dataContext)
         val json = selectedNode?.rawValue!!.substring(1, selectedNode.rawValue!!.length - 1)
 
+        val className = selectedNode.valueContainer::class.qualifiedName
+
+        Messages.showMessageDialog(
+            e.project,
+            "The type of valueContainer is: $className",
+            "ValueContainer Type Information",
+            Messages.getInformationIcon()
+        )
+
         val service = e.project!!.service<MeshService>()
         service.addMesh(Mesh.createFromJson(json))
+    }
+
+    override fun update(event: AnActionEvent) {
+        //event.presentation.isEnabledAndVisible = true
     }
 }

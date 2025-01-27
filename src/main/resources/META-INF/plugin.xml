@@ -16,9 +16,16 @@
         <listener class="com.github.kvasnevskyivlad.meshviewer.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
     </applicationListeners>
     <actions>
+        <!-- Existing action for Debug tab -->
         <action id="AddMeshToViewer" class="com.github.kvasnevskyivlad.meshviewer.actions.AddMeshToViewerAction"
-                text="--Add Mesh to Viewer--" description="Adds Mesh to Viewer">
-            <add-to-group group-id="XDebugger.ValueGroup" anchor="last"/>
+                text="Add Mesh to Viewer" description="Adds mesh to Viewer">
+            <add-to-group group-id="XDebugger.ValueGroup" anchor="first"/>
         </action>
+
+<!--        &lt;!&ndash; New action for right-click context menu in the editor &ndash;&gt;-->
+<!--        <action id="AddMeshToViewerFromEditor" class="com.github.kvasnevskyivlad.meshviewer.actions.AddMeshToViewerAction"-->
+<!--                text="Add Mesh to Viewer" description="Adds mesh to Viewer from code">-->
+<!--            <add-to-group group-id="EditorPopupMenuDebug" anchor="first"/>-->
+<!--        </action>-->
     </actions>
 </idea-plugin>
