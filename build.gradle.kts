@@ -5,14 +5,12 @@ fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
-    //id("java") // Java support
     alias(libs.plugins.kotlin) // Kotlin support
     alias(libs.plugins.gradleIntelliJPlugin) // Gradle IntelliJ Plugin
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
-    //id("com.gradleup.shadow") version "9.0.0-beta6"
 }
 
 group = properties("pluginGroup").get()
@@ -107,19 +105,6 @@ tasks {
         }
     }
 
-//    shadowJar {
-//        archiveBaseName = properties("pluginName").get()
-//        version = properties("pluginVersion").get()
-//        enableRelocation = true
-//        relocationPrefix = "shadow"
-//        mergeServiceFiles()
-//
-//        // Include native libraries explicitly
-//        from(configurations.get().filter { it.name.endsWith("jogamp") }) {
-//            into("libs/natives")
-//        }
-//    }
-
     // Configure UI tests plugin
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
     runIdeForUiTests {
@@ -143,13 +128,4 @@ tasks {
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels = properties("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
-
-//    buildPlugin {
-//        dependsOn(shadowJar)
-//    }
-//
-//    prepareSandbox {
-//        pluginJar = shadowJar.get().archiveFile
-//        dependsOn(shadowJar)
-//    }
 }
